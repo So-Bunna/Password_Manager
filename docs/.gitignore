@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# Virtualenv
+venv/
+.env
+
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+
+# PyInstaller
+*.manifest
+*.spec
+
+
+# VS Code
+.vscode/
+
+
+# System files
+.DS_Store
+Thumbs.db
+
+
+# Secrets and local files
+secrets.json
+vault.bin
