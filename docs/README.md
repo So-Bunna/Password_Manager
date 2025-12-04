@@ -18,6 +18,11 @@ password-manager/ ├── src/ │ ├── init.py │ └── main.py ├
 
 ## 🛠 Tools & Technologies
 
-- Language: Python 3.10+
-- Git & GitHub
-- Cryptography libraries: `cryptography`, `argon2-cffi` or `hashlib`/`bcrypt` (to be chosen later)
+- Python 3.9+
+- cryptography
+
+Install:
+
+```bash
+python -m pip install cryptography
+```

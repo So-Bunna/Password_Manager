@@ -1,34 +1,8 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
 
-
-# Virtualenv
-venv/
-.env
-
-
-# Distribution / packaging
-build/
-dist/
-*.egg-info/
-
-
-# PyInstaller
-*.manifest
-*.spec
-
-
-# VS Code
-.vscode/
-
-
-# System files
-.DS_Store
-Thumbs.db
-
-
-# Secrets and local files
-secrets.json
-vault.bin
+# Database and secrets
+.vault.*
+*.db
+/home/*/.password_manager/vault.db
