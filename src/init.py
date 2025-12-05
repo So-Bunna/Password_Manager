@@ -1,4 +1,3 @@
-# src/init.py
 """
 Initialization script for the password manager.
 Creates the database and prompts for a master password on first run.
@@ -8,6 +7,7 @@ import sqlite3
 import pathlib
 import getpass
 import secrets
+import string
 import hashlib
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 from cryptography.hazmat.backends import default_backend
@@ -27,6 +27,21 @@ def safe_input_password(prompt="Password: "):
         return getpass.getpass(prompt)
     except:
         return input(prompt)
+
+
+# -------- Password Strength Checker --------
+def is_strong_password(pwd: str) -> bool:
+    if len(pwd) < 8:
+        return False
+    if not any(c.islower() for c in pwd):
+        return False
+    if not any(c.isupper() for c in pwd):
+        return False
+    if not any(c.isdigit() for c in pwd):
+        return False
+    if not any(c in string.punctuation for c in pwd):
+        return False
+    return True
 
 
 def _derive_master_key(password: bytes, salt: bytes) -> bytes:
@@ -74,13 +89,29 @@ def setup_master_password():
         print("Vault already exists. Delete vault.db to reset.")
         return
 
-    pw1 = safe_input_password("Create master password: ").encode()
-    pw2 = safe_input_password("Confirm master password: ").encode()
+    # ----- Ask until strong password is provided -----
+    while True:
+        pw1 = safe_input_password("Create master password: ")
+        pw2 = safe_input_password("Confirm master password: ")
 
-    if pw1 != pw2:
-        print("Passwords do not match.")
-        return
+        if pw1 != pw2:
+            print("❌ Passwords do not match. Try again.\n")
+            continue
 
+        if not is_strong_password(pw1):
+            print("❌ Weak password! Must include:")
+            print("- Uppercase")
+            print("- Lowercase")
+            print("- Digit")
+            print("- Symbol")
+            print("- Minimum 8 characters\n")
+            continue
+
+        # If strong & matches → break
+        pw1 = pw1.encode()
+        break
+
+    # ----- Create vault -----
     salt = secrets.token_bytes(16)
     key = _derive_master_key(pw1, salt)
     verifier = hashlib.sha256(key).hexdigest()
@@ -99,7 +130,8 @@ def setup_master_password():
     conn.commit()
     conn.close()
 
-    print("Master password created successfully!")
+    print("\n✔ Master password created successfully!")
+    print("✔ Vault initialized.")
 
 
 if __name__ == "__main__":

@@ -1,28 +1,87 @@
-# Password Manager (Cryptography Project)
+# 🔐 Password Manager
+
+### Version: **1.2.0**
+
+A secure and simple **Password Manager** built as part of a university **Cryptography Project**.  
+It uses **AES-GCM encryption**, **Scrypt key derivation**, and **salted hashing** to safely store and manage user credentials.
+
+---
 
 ## 📌 Project Overview
 
-This project is a simple and secure Password Manager developed for the Cryptography course. The goal is to apply cryptographic concepts to build a secure system that stores and manages user passwords.
+This project demonstrates practical use of applied cryptography by building a functional password manager that securely stores credentials using modern cryptographic techniques.  
+All passwords are protected by a **Master Password**, which is never stored.  
+Instead, a cryptographic key is derived using Scrypt (memory-hard KDF), ensuring strong resistance against brute-force attacks.
 
-## 🎯 Objectives
+---
 
-- Implement secure password encryption (AES / ChaCha20)
-- Use a master password with hashing + salt
-- Store encrypted passwords safely
-- Provide basic operations: Add, View, Update, Delete
-- Follow clean code and security best practices
+## 🎯 Features
 
-## 📁 Project Structure (Initial)
+### 🔑 **Security Features**
 
-password-manager/ ├── src/ │ ├── init.py │ └── main.py ├── docs/ ├── .gitignore ├── README.md
+- AES-GCM authenticated encryption for all stored passwords
+- Scrypt key-derivation with salt
+- Master password verification using SHA-256
+- Strong password requirements
+- Auto-generation of secure passwords
+- Secure storage using SQLite (`vault.db`)
 
-## 🛠 Tools & Technologies
+### 🧰 **Functionality**
 
-- Python 3.9+
-- cryptography
+- Add new platform password
+- View saved credentials
+- Update username/password
+- Auto-generate new password if weak
+- Delete platform
+- List all saved platforms
+- Change master password (re-encrypts whole database)
 
-Install:
+### 🧩 **CLI Menu**
+
+1.Add Platform
+2.View Platform
+3.Update Platform
+4.Delete Platform
+5.List Platforms
+6.Change Master Password
+7.Exit
+
+---
+
+## 📁 Project Structure
+
+password-manager/
+│
+├── src/
+│ ├── init.py # Initializes vault + master password
+│ └── main.py # Main password manager logic
+│
+├── docs/ # Documentation / screenshots (optional)
+├── .gitignore
+└── README.md
+
+---
+
+## 🛠 Requirements
+
+- Python **3.9+**
+- `cryptography` package  
+  Install:
 
 ```bash
-python -m pip install cryptography
+pip install cryptography
+
+
+##  Usage Guide
+
+1️⃣ Initialize the Vault (first time only)
+python src/init.py
+You will set your Master Password here.
+
+2️⃣ Run the Password Manager
+python src/main.py
+Enter your Master Password to unlock the vault.
+
+3️⃣ Use the options from the menu
+Add, view, update, delete, or list platforms.
 ```
