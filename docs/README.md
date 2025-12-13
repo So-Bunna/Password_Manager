@@ -1,87 +1,138 @@
-# 🔐 Password Manager
-
-### Version: **1.2.0**
-
-A secure and simple **Password Manager** built as part of a university **Cryptography Project**.  
-It uses **AES-GCM encryption**, **Scrypt key derivation**, and **salted hashing** to safely store and manage user credentials.
-
----
+# 🔐 Secure Password Manager (AES-GCM + Scrypt)
 
 ## 📌 Project Overview
 
-This project demonstrates practical use of applied cryptography by building a functional password manager that securely stores credentials using modern cryptographic techniques.  
-All passwords are protected by a **Master Password**, which is never stored.  
-Instead, a cryptographic key is derived using Scrypt (memory-hard KDF), ensuring strong resistance against brute-force attacks.
+This project is a **secure command-line password manager** written in Python. It allows users to safely store, retrieve, update, and delete account credentials using modern cryptographic techniques.
+
+The application protects all stored passwords using:
+
+- **Scrypt** for secure master key derivation
+- **AES-GCM** for authenticated encryption
+- **SQLite** as an encrypted local storage backend
+
+The master password is **never stored**. All sensitive data is encrypted before being written to disk.
 
 ---
 
-## 🎯 Features
+## 🎯 Project Goals
 
-### 🔑 **Security Features**
-
-- AES-GCM authenticated encryption for all stored passwords
-- Scrypt key-derivation with salt
-- Master password verification using SHA-256
-- Strong password requirements
-- Auto-generation of secure passwords
-- Secure storage using SQLite (`vault.db`)
-
-### 🧰 **Functionality**
-
-- Add new platform password
-- View saved credentials
-- Update username/password
-- Auto-generate new password if weak
-- Delete platform
-- List all saved platforms
-- Change master password (re-encrypts whole database)
-
-### 🧩 **CLI Menu**
-
-1.Add Platform
-2.View Platform
-3.Update Platform
-4.Delete Platform
-5.List Platforms
-6.Change Master Password
-7.Exit
+- Prevent plaintext password storage
+- Protect against brute-force and offline attacks
+- Apply real-world cryptographic best practices
+- Demonstrate understanding of hashing, KDFs, and symmetric encryption
 
 ---
 
-## 📁 Project Structure
+## 🧱 Project Structure
 
+```
 password-manager/
-│
 ├── src/
-│ ├── init.py # Initializes vault + master password
-│ └── main.py # Main password manager logic
+│   ├── __init__.py
+│   ├── init.py          # Vault initialization & master password setup
+│   ├── main.py          # Main application (CRUD operations)
+│   └── crypto_utils.py  # Cryptographic utilities (KDF, password checks)
 │
-├── docs/ # Documentation / screenshots (optional)
-├── .gitignore
-└── README.md
+├── vault.db             # Encrypted password database (auto-generated)
+├── README.md
+└── requirements.txt
+```
 
 ---
 
-## 🛠 Requirements
+## 🔐 Cryptographic Design
 
-- Python **3.9+**
-- `cryptography` package  
-  Install:
+### 1. Master Password Protection
+
+- Master password is processed using **Scrypt** (memory-hard KDF)
+- A random **salt** is generated and stored
+- A SHA-256 verifier of the derived key is used for authentication
+
+### 2. Data Encryption
+
+- Password entries are encrypted using **AES-GCM**
+- Each entry uses a unique random nonce
+- Platform name is used as **AAD (Additional Authenticated Data)** to bind ciphertext to context
+
+### 3. Security Features
+
+- Strong password enforcement
+- Constant-time comparison (`hmac.compare_digest`)
+- Brute-force protection (limited attempts)
+- Secure random number generation (`secrets` module)
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Requirements
+
+- Python 3.9+
+- Required libraries:
 
 ```bash
 pip install cryptography
-
-
-##  Usage Guide
-
-1️⃣ Initialize the Vault (first time only)
-python src/init.py
-You will set your Master Password here.
-
-2️⃣ Run the Password Manager
-python src/main.py
-Enter your Master Password to unlock the vault.
-
-3️⃣ Use the options from the menu
-Add, view, update, delete, or list platforms.
 ```
+
+### 2. Initialize Vault
+
+Run once to create the encrypted database and master password:
+
+```bash
+python src/init.py
+```
+
+---
+
+## ▶️ Running the Application
+
+```bash
+python src/main.py
+```
+
+### Available Features
+
+- Add new platform credentials
+- View stored credentials
+- Update usernames or passwords
+- Delete entries
+- List saved platforms
+- Change master password (re-encrypts all data)
+
+---
+
+## 📖 Usage Example
+
+```
+Select: 1
+Platform: Gmail
+Username: example@gmail.com
+Auto-generate password: Yes
+[+] Added: Gmail
+```
+
+---
+
+## 🚀 Future Improvements
+
+- Clipboard auto-clear after copying passwords
+- GUI version (Tkinter / Web UI)
+- Encrypted cloud backup
+- Hardware-backed key storage
+
+---
+
+## 📚 References
+
+- NIST SP 800-63B (Digital Identity Guidelines)
+- RFC 4106 – Galois/Counter Mode (GCM)
+- OWASP Password Storage Cheat Sheet
+- Python Cryptography Documentation
+
+---
+
+## 👤 Author
+
+Student Project – Cryptography / Security Course
+
+**Final Version:** `v1.1.0-final`

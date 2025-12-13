@@ -1,0 +1,6 @@
+Python 3.9+
+cryptography>=41.0.0
+
+Install:
+
+pip install cryptography

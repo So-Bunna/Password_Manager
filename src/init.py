@@ -1,70 +1,30 @@
-"""
-Initialization script for the password manager.
-Creates the database and prompts for a master password on first run.
-"""
-
 import sqlite3
 import pathlib
 import getpass
 import secrets
-import string
 import hashlib
-from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-from cryptography.hazmat.backends import default_backend
+import os
 
-# ---- Store DB inside project folder ----
+from crypto_utils import derive_master_key, is_strong_password
+
 DB_PATH = pathlib.Path(__file__).resolve().parent / "vault.db"
 
-SCRYPT_N = 2**14
-SCRYPT_R = 8
-SCRYPT_P = 1
-SCRYPT_LEN = 32
 
-
-# Safe password prompt for Windows
 def safe_input_password(prompt="Password: "):
     try:
         return getpass.getpass(prompt)
-    except:
+    except Exception:
         return input(prompt)
 
 
-# -------- Password Strength Checker --------
-def is_strong_password(pwd: str) -> bool:
-    if len(pwd) < 8:
-        return False
-    if not any(c.islower() for c in pwd):
-        return False
-    if not any(c.isupper() for c in pwd):
-        return False
-    if not any(c.isdigit() for c in pwd):
-        return False
-    if not any(c in string.punctuation for c in pwd):
-        return False
-    return True
-
-
-def _derive_master_key(password: bytes, salt: bytes) -> bytes:
-    kdf = Scrypt(
-        salt=salt,
-        length=SCRYPT_LEN,
-        n=SCRYPT_N,
-        r=SCRYPT_R,
-        p=SCRYPT_P,
-        backend=default_backend()
-    )
-    return kdf.derive(password)
-
-
-def _create_schema(conn: sqlite3.Connection):
+def create_schema(conn):
     cur = conn.cursor()
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS config (
             id INTEGER PRIMARY KEY CHECK (id = 1),
             salt BLOB NOT NULL,
-            verifier TEXT NOT NULL,
-            kdf_params TEXT NOT NULL
+            verifier TEXT NOT NULL
         );
     """)
 
@@ -86,52 +46,42 @@ def _create_schema(conn: sqlite3.Connection):
 
 def setup_master_password():
     if DB_PATH.exists():
-        print("Vault already exists. Delete vault.db to reset.")
+        print("Vault already exists.")
         return
 
-    # ----- Ask until strong password is provided -----
     while True:
         pw1 = safe_input_password("Create master password: ")
         pw2 = safe_input_password("Confirm master password: ")
 
         if pw1 != pw2:
-            print("❌ Passwords do not match. Try again.\n")
+            print("Passwords do not match.\n")
             continue
 
         if not is_strong_password(pw1):
-            print("❌ Weak password! Must include:")
-            print("- Uppercase")
-            print("- Lowercase")
-            print("- Digit")
-            print("- Symbol")
-            print("- Minimum 8 characters\n")
+            print("Weak password! Use uppercase, lowercase, digit, symbol, 8+ chars.\n")
             continue
 
-        # If strong & matches → break
-        pw1 = pw1.encode()
         break
 
-    # ----- Create vault -----
+    pw1 = pw1.encode()
     salt = secrets.token_bytes(16)
-    key = _derive_master_key(pw1, salt)
+    key = derive_master_key(pw1, salt)
     verifier = hashlib.sha256(key).hexdigest()
 
-    params = str({"n": SCRYPT_N, "r": SCRYPT_R, "p": SCRYPT_P})
-
     conn = sqlite3.connect(DB_PATH)
-    _create_schema(conn)
+    create_schema(conn)
 
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO config (id, salt, verifier, kdf_params) VALUES (1, ?, ?, ?);",
-        (salt, verifier, params)
+        "INSERT INTO config (id, salt, verifier) VALUES (1, ?, ?);",
+        (salt, verifier)
     )
 
     conn.commit()
     conn.close()
 
-    print("\n✔ Master password created successfully!")
-    print("✔ Vault initialized.")
+    os.chmod(DB_PATH, 0o600)
+    print("✔ Vault initialized successfully!")
 
 
 if __name__ == "__main__":
